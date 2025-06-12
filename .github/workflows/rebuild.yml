@@ -1,0 +1,24 @@
+name: Trigger Rebuild
+
+on:
+  schedule:
+    - cron: "0 * * * 1-5"
+jobs:
+  trigger_rebuild:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make a trivial change
+        run: |
+          echo "Last Rebuild: $(date -u)" > REBUILD_TIMESTAMP.txt
+
+      - name: Commit and push the change
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          git add REBUILD_TIMESTAMP.txt
+          git commit -m "Trigger Rebuild: $(date -u)"
+          git push
