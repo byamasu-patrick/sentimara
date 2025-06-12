@@ -1,0 +1,12 @@
+*.pyc
+.env
+.venv
+.env.docker
+survey.db
+volume
+
+# dependencies
+/node_modules
+
+# misc
+.DS_Store
