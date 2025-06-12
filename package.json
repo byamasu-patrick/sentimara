@@ -1,0 +1,27 @@
+{
+  "name": "survey.info4pi.org",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The JMF-OpenAI-LLM-Integration is a Python Flask application that integrates the OpenAI Language Model (LLM) with the JMF Survey App. It provides authenticated users with the ability to glean insights from the survey data using natural language queries. The OpenAI Language Model processes these queries and retrieves relevant information from a PostgreSQL database that stores the survey data.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmfadmin/openaillm.info4pi.org"
+  },
+  "license": "UNLICENSED",
+  "author": {
+    "name": "WhatNow Digital"
+  },
+  "scripts": {
+    "sort": "npx sort-package-json",
+    "upgrade": "npx npm-check-updates -u"
+  },
+  "commitlint": {
+    "extends": [
+      "./@commitlint/config-conventional"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3"
+  }
+}
