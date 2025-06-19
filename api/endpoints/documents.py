@@ -12,7 +12,6 @@ from api.deps import get_db
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-
 @router.get("/")
 async def get_documents(
     document_ids: Optional[List[UUID]] = Query(None),

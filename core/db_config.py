@@ -2,7 +2,6 @@
 Database configuration module that manages database connection settings and URLs.
 This module is separate from the main config to avoid circular imports.
 """
-
 import os
 from dotenv import load_dotenv
 

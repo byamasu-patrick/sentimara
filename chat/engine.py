@@ -45,7 +45,6 @@ from libs.models.db import init_db, table_context_dict, responses_table_name, re
 from schema import Conversation as ConversationSchema
 from schema import Message as MessageSchema
 from schema import QueryEngineInfo
-from seeder.db_seeder import DBSeeder    
 from .workflow import (
     AgentConfig,
     ConciergeAgent,
