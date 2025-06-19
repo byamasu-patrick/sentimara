@@ -1,5 +1,6 @@
 from enum import Enum
-
+from sqlalchemy import Column, DateTime, Numeric
+from datetime import datetime
 from llama_index.core.callbacks.schema import CBEventType
 from sqlalchemy import Boolean, Column, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
@@ -122,3 +123,50 @@ class HumanFeedback(Base):
     user_message_id = Column(UUID(as_uuid=True))
     is_good_response = Column(Boolean)
     Thread_id = Column(UUID(as_uuid=True))
+
+
+
+class Client(Base):
+    __tablename__ = "clients"
+    
+    # Personal Details
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    date_of_birth = Column(DateTime, nullable=False)
+    email = Column(String(255), unique=True)
+    phone = Column(String(20))
+    
+    # Identification
+    id_type = Column(String(50), nullable=True)
+    id_number = Column(String(50), nullable=True)
+    
+    # Address
+    street_address = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(100), nullable=True)
+    postal_code = Column(String(20), nullable=True)
+    country = Column(String(100), nullable=True)
+    
+    # Income
+    annual_income = Column(Numeric(15, 2))
+    income_currency = Column(String(3))
+    
+    # Nationality
+    nationality = Column(String(100))
+    
+    # Relationship
+    transactions = relationship("Transaction", back_populates="client")
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    transaction_number = Column(String(50), unique=True, nullable=True)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=True)
+    transaction_type = Column(String(50),nullable=False)
+    amount = Column(Numeric(15, 2), nullable=False)
+    currency = Column(String(3), nullable=False)  # ISO currency code
+    transaction_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationship
+    client = relationship("Client", back_populates="transactions")

@@ -16,7 +16,7 @@ from sqlalchemy.engine import Engine
 from starlette.middleware.cors import CORSMiddleware
 
 from api.api import api_router
-from chat.engine import init_azure_openai, init_anthropic
+from chat.engine import init_openai, init_anthropic
 from core.config import settings
 from libs.db.session import non_async_engine, close_db_connection
 from libs.db.wait_for_db import check_database_connection
@@ -55,8 +55,8 @@ def __setup_logging(log_level: str):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # init_open
-    init_azure_openai()
+    init_openai()
+    # init_azure_openai()
     init_anthropic()
     # first wait for DB to be connectable
     await check_database_connection()
