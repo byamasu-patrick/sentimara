@@ -37,7 +37,6 @@ async def update_conversation_headline(
         messages = conversation.messages[0].content
         headline = get_conversation_headline(messages)
 
-        print(headline)
         conversation.headline = headline  # type: ignore
         await db.commit()
 

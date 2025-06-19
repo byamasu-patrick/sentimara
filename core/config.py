@@ -72,6 +72,12 @@ class Settings(PreviewPrefixedSettings):
     MODEL: str = "gpt-4o"
     # SQL_MODEL: str = "claude-3-7-sonnet-20250219"
     SQL_MODEL: str = "claude-3-5-sonnet-latest"
+    
+    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
+    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")  # type: ignore
+    AZURE_OPENAI_API_VERSION: str = os.getenv("AZURE_OPENAI_API_VERSION")  # type: ignore
+    AZURE_LLM_DEPLOYMENT_NAME: str = os.getenv("AZURE_LLM_DEPLOYMENT_NAME")  # type: ignore
+    AZURE_EMBEDDING_DEPLOYMENT_NAME: str = os.getenv("AZURE_EMBEDDING_DEPLOYMENT_NAME")  # type: ignore
     # Name of the embedding model to use.
     EMBEDDING_MODEL: str = "text-embedding-3-large"
     # Dimension of the embedding model to use.
