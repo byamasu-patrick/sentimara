@@ -29,8 +29,6 @@ from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.core.utilities.sql_wrapper import SQLDatabase
 from llama_index.llms.openai.base import OpenAI
 from llama_index.question_gen.openai import OpenAIQuestionGenerator
-from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
 from llama_index.core.workflow.handler import WorkflowHandler
 from llama_index.llms.openai import OpenAI
 from chat.constants import SUB_QUESTION_SYSTEM_PROMPT, SYSTEM_PROMPT
@@ -44,6 +42,7 @@ from libs.models.chatdb import MessageRoleEnum, MessageStatusEnum
 from schema import Conversation as ConversationSchema
 from schema import Message as MessageSchema
 from schema import QueryEngineInfo
+from libs.models.db import table_context_dict
 from .workflow import (
     AgentConfig,
     ConciergeAgent,
@@ -316,17 +315,6 @@ def build() -> tuple[List[QueryEngineInfo], SQLTableRetrieverQueryEngine]:
     Returns:
     List[QueryEngineInfo]: A list of QueryEngineInfo instances, each containing a configured query engine for database interaction.
     """
-    db_uri = f"postgresql+psycopg2://{settings.DATABASE_USERNAME_DEV}:{settings.DATABASE_PASSWORD_DEV}@{settings.DATABASE_HOST_DEV}:{settings.DATABASE_PORT_DEV}/{settings.DATABASE_NAME_DEV}"
-
-    # Create an SQLAlchemy engine for PostgreSQL
-    pg_engine = create_engine(db_uri, echo=True)
-
-    # Create a session for PostgreSQL
-    # TODO: Variable name "SessionPG" doesn't conform to snake_case naming style
-    SessionPG = sessionmaker(bind=pg_engine)
-    pg_session = SessionPG()
-
-    pg_session.close_all()
     # Create query engines dynamically
     query_engines: List[QueryEngineData] = []
 
@@ -458,22 +446,23 @@ def get_agent_configs(
     callback_handler: BaseCallbackHandler,
 ) -> list[AgentConfig]:
     curr_date = datetime.utcnow().strftime("%Y-%m-%d")
+    tables_list = ["clients", "transactions"]
 
     return [
         AgentConfig(
-            name="PI Survey Data Analyst (7-Table Scope)",
-            description="""Specialized agent for analyzing Primary Immunodeficiency survey data across 7 core tables. 
-            Capabilities strictly limited to:
-            - Patient demographics & geographic distribution
-            - Treatment modalities and pattern analysis
-            - Respondent network mapping
-            - Survey completion metrics
-            - Patient-reported experience measures
-            
+            name="Financial Fraud Detection Agent",
+            description="""Specialized agent for detecting and analyzing potential fraud using financial data. 
+            This agent is equipped to:
+            - Profile client behavior and segment by risk factors
+            - Analyze transactional trends, volumes, and patterns
+            - Detect anomalies or suspicious activity in transaction records
+            - Link demographic and geographic factors to financial behavior
+            - Support audit, compliance, and investigation workflows
+
             Exclusively uses structured data from: 
-            {tables}. Provides IUIS-aligned insights without external data integration.""".format(tables=", ".join(tables_list)),
+            {tables}. Provides insights driven entirely by in-database intelligence without external data integration.""".format(tables=", ".join(tables_list)),
             system_prompt=SYSTEM_PROMPT.format(
-                table_names=tables_list, 
+                table_names=", ".join(tables_list),
                 curr_date=curr_date
             ),
             tools=get_query_engine_tools(callback_handler),

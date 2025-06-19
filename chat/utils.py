@@ -1,14 +1,22 @@
 """
 This module contains definitions and initializations for a list of tables and table groups 
-used in a survey analysis context. It includes detailed descriptions for each table in the 
-form of TableInfo objects, which provide insights into the purpose and usage of each table.
+used in a financial fraud detection context. It includes detailed descriptions for each table in the 
+form of TableInfo objects, which guide the AI in understanding how to utilize each data source 
+for detecting, explaining, and preventing fraudulent behavior.
 
-query_engine_description: Provides a detailed explanation of how each table's data is analyzed and interpreted by the AI. It describes the specific attributes and types of data contained in each table and how this data contributes to the overall survey analysis. These descriptions guide the AI in understanding the content and significance of each table.
+query_engine_description: Provides a detailed explanation of how each table's data is analyzed and interpreted by the AI. 
+It describes the structure, key fields, and relationships within each table, and how this data contributes 
+to identifying anomalies, understanding client profiles, and detecting suspicious financial activity.
 
-top_query_engine_description: Offers a high-level overview of each table's analytical focus. It summarizes the key functionalities of the AI concerning each table, highlighting the primary insights and outcomes the AI can derive from the data.
+top_query_engine_description: Offers a high-level overview of each table's analytical focus. 
+It summarizes the primary ways the AI utilizes each table to derive insights, particularly around 
+transactional behavior, client demographics, risk profiling, and unusual financial patterns.
 
-In the context of the AI integration, these descriptions are crucial as they instruct the AI on how to utilize each table's data effectively. They align with the overarching goal of providing insights into Primary Immunodeficiencies and related medical data, as indicated in the SYSTEM_MESSAGE. The detailed and top-level descriptions ensure the AI can appropriately interpret and respond to queries by leveraging the specific data and insights each table offers.
+In the context of AI-powered fraud detection, these descriptions are essential for helping the AI leverage 
+structured financial data to respond intelligently to user queries, detect abnormal patterns, flag high-risk clients, 
+and support decision-making in compliance, auditing, and investigation workflows.
 """
+
 
 from typing import List
 from schema import TableInfo
