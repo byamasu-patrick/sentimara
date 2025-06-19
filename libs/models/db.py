@@ -82,15 +82,15 @@ class Client(Base):
     phone = Column(String(20))
     
     # Identification
-    id_type = Column(String(50), nullable=False)
-    id_number = Column(String(50), nullable=False, unique=True)
+    id_type = Column(String(50), nullable=True)
+    id_number = Column(String(50), nullable=True)
     
     # Address
-    street_address = Column(String(255))
-    city = Column(String(100))
-    state = Column(String(100))
-    postal_code = Column(String(20))
-    country = Column(String(100))
+    street_address = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(100), nullable=True)
+    postal_code = Column(String(20), nullable=True)
+    country = Column(String(100), nullable=True)
     
     # Income
     annual_income = Column(Numeric(15, 2))
@@ -107,9 +107,9 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    transaction_number = Column(String(50), unique=True, nullable=False)
-    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
-    transaction_type = Column(String(50), unique=True, nullable=False)
+    transaction_number = Column(String(50), unique=True, nullable=True)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=True)
+    transaction_type = Column(String(50),nullable=False)
     amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)  # ISO currency code
     transaction_date = Column(DateTime, default=datetime.utcnow, nullable=False)
