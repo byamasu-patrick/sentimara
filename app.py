@@ -24,13 +24,6 @@ from loader_io import loader_io_router
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-DATABASE_HOST_DEV = os.getenv("DATABASE_HOST_DEV")
-DATABASE_NAME_DEV = os.getenv("DATABASE_NAME_DEV")
-DATABASE_PASSWORD_DEV = os.getenv("DATABASE_PASSWORD_DEV")
-DATABASE_PORT_DEV = os.getenv("DATABASE_PORT_DEV")
-DATABASE_USERNAME_DEV = os.getenv("DATABASE_USERNAME_DEV")
-
 # alembic_cfg = Config("alembic.ini")
 # # Run the migration
 # command.upgrade(alembic_cfg, "head")

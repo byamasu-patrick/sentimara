@@ -51,12 +51,6 @@ from .workflow import (
 
 load_dotenv()
 
-DATABASE_HOST_DEV = os.getenv("DATABASE_HOST_DEV")
-DATABASE_NAME_DEV = os.getenv("DATABASE_NAME_DEV")
-DATABASE_PASSWORD_DEV = os.getenv("DATABASE_PASSWORD_DEV")
-DATABASE_PORT_DEV = os.getenv("DATABASE_PORT_DEV")
-DATABASE_USERNAME_DEV = os.getenv("DATABASE_USERNAME_DEV")
-
 logger = logging.getLogger(__name__)
 logger.info("Applying nested asyncio patch")
 nest_asyncio.apply()
@@ -322,7 +316,7 @@ def build() -> tuple[List[QueryEngineInfo], SQLTableRetrieverQueryEngine]:
     Returns:
     List[QueryEngineInfo]: A list of QueryEngineInfo instances, each containing a configured query engine for database interaction.
     """
-    db_uri = f"postgresql+psycopg2://{DATABASE_USERNAME_DEV}:{DATABASE_PASSWORD_DEV}@{DATABASE_HOST_DEV}:{DATABASE_PORT_DEV}/{DATABASE_NAME_DEV}"
+    db_uri = f"postgresql+psycopg2://{settings.DATABASE_USERNAME_DEV}:{settings.DATABASE_PASSWORD_DEV}@{settings.DATABASE_HOST_DEV}:{settings.DATABASE_PORT_DEV}/{settings.DATABASE_NAME_DEV}"
 
     # Create an SQLAlchemy engine for PostgreSQL
     pg_engine = create_engine(db_uri, echo=True)
