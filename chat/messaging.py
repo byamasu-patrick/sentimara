@@ -15,7 +15,7 @@ from llama_index.core.query_engine.sub_question_query_engine import (
 from pydantic import BaseModel
 
 import schema
-from chat.engine import get_chat_engine, workflow_runner
+from chat.engine import workflow_runner
 from libs.models.chatdb import MessageSubProcessSourceEnum
 from schema import (
     Conversation,
@@ -29,7 +29,6 @@ from .workflow import (
     ToolApprovedEvent,
 )
 from llama_index.core.workflow import (
-    StartEvent,
     StopEvent,
 )
 

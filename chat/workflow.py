@@ -15,9 +15,7 @@ from llama_index.core.workflow import (
     step,
     Context,
 )
-from llama_index.core.settings import Settings
 from llama_index.core.workflow.events import InputRequiredEvent, HumanResponseEvent
-from llama_index.llms.openai import OpenAI
 
 from .utils import FunctionToolWithContext
 

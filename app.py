@@ -12,7 +12,7 @@ from alembic.runtime import migration
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from llama_index.core.node_parser.text.utils import split_by_sentence_tokenizer
-from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy.engine import Engine
 from starlette.middleware.cors import CORSMiddleware
 
 from api.api import api_router
@@ -21,7 +21,6 @@ from core.config import settings
 from libs.db.session import non_async_engine, close_db_connection
 from libs.db.wait_for_db import check_database_connection
 from loader_io import loader_io_router
-from seeder.seed_db import main_upsert_single_document
 
 load_dotenv()
 
@@ -78,7 +77,6 @@ async def lifespan(app: FastAPI):
     if not check_current_head(cfg, non_async_engine):
         raise Exception("Database is not up to date. Please run `alembic upgrade head`")
 
-    await main_upsert_single_document()
     # Some setup is required to initialize the llama-index sentence splitter
     split_by_sentence_tokenizer()
     yield

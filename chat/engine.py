@@ -33,15 +33,14 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from llama_index.core.workflow.handler import WorkflowHandler
 from llama_index.llms.openai import OpenAI
-from chat.constants import SUB_QUESTION_SYSTEM_PROMPT, SYSTEM_PROMPT, SYSTEM_PROMPT_MARKETING, SYSTEM_PROMPT_RESPONSES, SUB_QUESTION_RESPONSES_SYSTEM_PROMPT
+from chat.constants import SUB_QUESTION_SYSTEM_PROMPT, SYSTEM_PROMPT
 from chat.custom_sub_question_query_engine import CustomSubQuestionQueryEngine
-from chat.qa_response_synth import get_custom_response_synth, get_custom_response_synthesis_for_responses_table
+from chat.qa_response_synth import get_custom_response_synth
 from chat.core.settings import CustomSettings
-from chat.utils import table_groups, tables_list, responses_table_name_, responses_table_query_engine_description, top_responses_query_engine_description
+from chat.utils import table_groups, tables_list
 from core.config import settings
 from libs.db.session import non_async_engine
 from libs.models.chatdb import MessageRoleEnum, MessageStatusEnum
-from libs.models.db import init_db, table_context_dict, responses_table_name, responses_table_description
 from schema import Conversation as ConversationSchema
 from schema import Message as MessageSchema
 from schema import QueryEngineInfo
@@ -49,6 +48,7 @@ from .workflow import (
     AgentConfig,
     ConciergeAgent,
 )
+
 load_dotenv()
 
 DATABASE_HOST_DEV = os.getenv("DATABASE_HOST_DEV")
@@ -200,25 +200,6 @@ def init_anthropic():
     CustomSettings.chunk_size = int(os.getenv("CHUNK_SIZE", "1024"))
     CustomSettings.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "20"))
 
-def response_table_index_builder(
-    sql_database: SQLDatabase,
-) -> ObjectIndex:
-    table_node_mapping = SQLTableNodeMapping(sql_database)
-    table_schema_objs: list[SQLTableSchema] = [
-        SQLTableSchema(
-            table_name=str(responses_table_name), context_str=str(responses_table_description)
-        ),
-    ]
-
-    obj_index = ObjectIndex.from_objects(
-        objects=table_schema_objs,
-        object_mapping=table_node_mapping,
-        index_cls=VectorStoreIndex,
-    )
-
-    return obj_index
-
-
 def table_index_builder(
     sql_database: SQLDatabase,
     table_context_dict: dict[str, str],
@@ -296,44 +277,6 @@ def build_query_engine(
 
     return query_engine
 
-def build_response_query_engine(
-    sql_database: SQLDatabase,
-) -> SQLTableRetrieverQueryEngine:
-    """
-    Constructs and returns a SQLTableRetrieverQueryEngine for querying the SQL database.
-
-    This function initializes a query engine that is capable of converting natural language queries into SQL queries.
-    It uses a text-to-SQL prompt template to guide this conversion process and leverages the provided service context
-    for query execution. The query engine is configured with specific context parameters for each table in the database,
-    as defined in the table_context_dict.
-
-    Parameters:
-    sql_database (SQLDatabase): The SQL database to be queried.
-    service_context (ServiceContext): The service context used for query execution and other operations.
-    table_context_dict (dict[str, str]): A dictionary mapping table names to context-specific parameters for querying.
-
-    Returns:
-    SQLTableRetrieverQueryEngine: A query engine configured for the specified SQL database and service context.
-    """
-    from chat.core.prompt import PI_TEXT_TO_SQL_PROMPT
-
-    obj_index: ObjectIndex = response_table_index_builder(
-        sql_database
-    )
-
-    kwargs = {
-        "similarity_top_k": 6
-    }
-
-    query_engine = SQLTableRetrieverQueryEngine(
-        sql_database=sql_database,
-        table_retriever=obj_index.as_retriever(**kwargs),
-        llm=CustomSettings.code_llm,
-        text_to_sql_prompt=PI_TEXT_TO_SQL_PROMPT,
-        sql_only=False,
-    )
-
-    return query_engine
 
 def get_tool_service_context() -> ServiceContext:
     """
@@ -411,17 +354,11 @@ def build() -> tuple[List[QueryEngineInfo], SQLTableRetrieverQueryEngine]:
             )
         )
 
-    sql_database = SQLDatabase(engine=non_async_engine, include_tables=[responses_table_name])
-    
-    responses_query_engine = build_response_query_engine(
-        sql_database
-    )
-
-    return query_engines, responses_query_engine
+    return query_engines
 
 
 # Get the dynamically created query engines
-query_engines, responses_query_engine = build()
+query_engines = build()
 
 
 def get_chat_history(
@@ -455,53 +392,6 @@ def get_chat_history(
         chat_history.append(ChatMessage(content=message.content, role=role))  # type: ignore
 
     return chat_history
-
-
-def get_response_query_engine_tools(callback_handler: BaseCallbackHandler, responses_query_engine: SQLTableRetrieverQueryEngine):
-    question_gen = OpenAIQuestionGenerator.from_defaults(
-        llm=Settings.llm, verbose=True, prompt_template_str=str(SUB_QUESTION_RESPONSES_SYSTEM_PROMPT)
-    )
-
-    callback_manager = CallbackManager([callback_handler])
-    Settings.callback_manager = callback_manager
-    CustomSettings.callback_manager = callback_manager
-
-    response_synth = get_custom_response_synthesis_for_responses_table(
-        callback_manager=callback_manager,
-    )
-
-    vector_sql_query_engine_tool = QueryEngineTool(
-        query_engine=responses_query_engine,
-        metadata=ToolMetadata(
-            name=str(responses_table_name_),
-            description=str(responses_table_query_engine_description),
-        ),
-        resolve_input_errors=True,
-    )
-
-    responses_question_engine = CustomSubQuestionQueryEngine.from_defaults(
-            query_engine_tools=[vector_sql_query_engine_tool],
-            llm=Settings.llm,
-            response_synthesizer=response_synth,
-            verbose=settings.VERBOSE,
-            question_gen=question_gen,
-            use_async=True,
-            callback_manager=callback_manager,
-        )
-
-    top_level_sub_tools = [
-        QueryEngineTool(
-            query_engine=responses_question_engine,
-            metadata=ToolMetadata(
-                name=f"{str(responses_table_name_)}_query_engine",
-                description=str(top_responses_query_engine_description),
-            ),
-            resolve_input_errors=True,
-        )
-    ]
-
-    return top_level_sub_tools
-
 
 def get_query_engine_tools(
     callback_handler: BaseCallbackHandler,
@@ -593,38 +483,6 @@ def get_agent_configs(
                 curr_date=curr_date
             ),
             tools=get_query_engine_tools(callback_handler),
-        ),
-        AgentConfig(
-            name="PI Defect Analyst",
-            description="""Specialized agent for analyzing PI defects distribution using physician-reported survey data. 
-            Expert in IUIS-classified defect patterns across world regions, sub-regions, and countries. Combines immunological expertise with 
-            spatial epidemiology methods to reveal disease clusters, regional prevalence trends, and categorical distributions. Features:
-            
-            • Hierarchical Analysis: World Region > Sub-Region > Country > Locality
-            • IUIS Classification Compliance: Strict category/sub-category adherence
-            • Epidemiological Insights: Case distribution patterns & regional burden analysis
-            • Data Constraints Management: Explicit disclosure of survey limitations
-            
-            Transforms raw response data into actionable intelligence for:
-            - Regional healthcare resource planning
-            - Cross-border defect prevalence comparisons
-            - IUIS category-specific hotspot identification
-            - Temporal-spatial trend analysis (2019-2025 data)""",
-            system_prompt=str(SYSTEM_PROMPT_RESPONSES),
-            tools=get_response_query_engine_tools(callback_handler, responses_query_engine),
-        ),
-        AgentConfig(
-            name="Marketing Agent",
-            description="""The Marketing Agent leverages insights from the Primary Immunodeficiency Survey Data Insight Agent to develop 
-            and refine data-driven marketing strategies for Primary Immunodeficiency (PI) products, services, or initiatives. 
-            It interprets survey data on treatment patterns, patient demographics, and disease prevalence to craft targeted marketing campaigns 
-            that resonate with healthcare providers, researchers, and patient communities. By focusing on regional trends and defect-specific insights, 
-            the agent helps optimize messaging, audience segmentation, and outreach efforts, ensuring that marketing initiatives are aligned 
-            with real-world clinical needs and patient demographics, leading to more effective engagement and outcomes.""",
-            system_prompt=SYSTEM_PROMPT_MARKETING.format(
-                table_names=tables_list, curr_date=curr_date
-            ),
-            tools=[],
         ),
     ]
 

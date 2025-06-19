@@ -1,7 +1,5 @@
-import os
-
 from dotenv import load_dotenv
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid
@@ -9,59 +7,55 @@ from sqlalchemy.dialects.postgresql import UUID, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 
-from libs.db.session import non_async_engine
-
 # Define the base class for declarative models
 Base = declarative_base()
 load_dotenv()
 
-responses_table_name="responses"
-responses_table_description="""
-    This table contains records of survey responses detailing defects or conditions reported by physicians. \
-    Each record relates to a defect, categorized hierarchically by category, sub_category., region and sub_region.
-
-    Key Columns:
-
-    defect: Main identifier of the reported defect or condition.
-    category, sub_category: Represent the major and sub-level classifications of the defect.
-    patients_reported: The number of patients diagnosed with the defect.
-    location-related columns: Data on geographical distribution, including country_name, locality, region, and global region names.
-    respondent_name, organization: Information about the physician or organization reporting the data.
-    gene_name, inheritance_pattern, omim_entry_id: Genetic markers related to the defect.
-    Query Usage:
-
-    Summarize Defects: Use the defect column to retrieve records related to specific defects and analyze patient counts using patients_reported.
-    Category-Level Analysis: If defect data is unavailable, queries can target category or sub_category for broader insights.
-    Geographical Insights: Aggregate patient counts by region using location-related columns to analyze geographical distribution.
-    Advanced Genetics: Filter defects based on genetic data (gene_name, omim_entry_id).
-    Respondent Insights: Understand the reporting sources through respondent_name and organization columns.
-    This table is ideal for analyzing defect prevalence, geographical patterns, and genetic trends in Primary Immunodeficiencies.
-    
-    # Note: When querying for CVID and/or other diseases/defects consider using survey "responses" table to get any relevant data \
-    which can be aggregated based on world regions or disease categories or sub-categories
-    # Example Query Pattern:
-        question: Using provided survey data on Primary Immunodeficiency, identify the top three regions of CVID.
-        response: To solve this you need to select from responses table where defect has 'cvid' and group by region.
-"""
-
 table_context_dict: dict[str, str] = {
-    "respondents": """
-        This table stores comprehensive information about all individuals who participated in the survey. Each record contains demographic, contact, \
-        and organizational details of the respondents, and it links to other tables for survey progress and responses.
+    "clients": """
+        This table stores detailed information about each client, including their identity, contact information, demographics, and financial profile. \
+        Clients are the primary entities who perform transactions in the system.
 
         Key Columns:
 
-        respondent_name: The full name of the respondent.
-        email: Email address for direct contact.
-        locality: The city or locality of the respondent.
-        region, country_name: Geographic information.
-        job_title, organization: Professional details including the respondent's title and organization.
-        is_administrator: Boolean indicating if the respondent holds administrative privileges.
+        first_name, last_name: The full name of the client.
+        date_of_birth: The client's date of birth.
+        email, phone: Contact information.
+        id_type, id_number: Government-issued identification details (e.g., passport, national ID).
+        street_address, city, state, postal_code, country: Full address details of the client.
+        annual_income, income_currency: Financial details including annual income and its currency.
+        nationality: The client's country of citizenship.
+        
+        Relationships:
+        - Linked to the Transaction table via client_id.
+
         Query Usage:
 
-        Progress Tracking: Use respondent_id to track the respondent's progress across survey tables by fetching the number of completed tables (table_id count).
-        Geographic Analysis: Filter respondents by location details such as region, country_name, or locality for geographic-based analyses.
-        Respondent Details: Retrieve detailed information on respondents based on their name or email for progress reporting.
+        Client Lookup: Retrieve full profiles of clients using identifiers such as email, ID number, or name.
+        Financial Analysis: Analyze clients based on income brackets or nationality.
+        Audit Trails: Link client records with their transactions for compliance or fraud checks.
+    """,
+    "transactions": """
+        This table records all financial transactions associated with each client. Each entry represents a single transaction and includes monetary \
+        details, type, and timing.
+
+        Key Columns:
+
+        transaction_number: A unique identifier for each transaction.
+        client_id: Foreign key referencing the client involved in the transaction.
+        transaction_type: The type/category of the transaction (e.g., deposit, withdrawal).
+        amount: The transaction amount.
+        currency: The ISO 3-letter currency code used in the transaction.
+        transaction_date: The date and time when the transaction occurred.
+
+        Relationships:
+        - Linked to the Client table via client_id.
+
+        Query Usage:
+
+        Transaction History: Retrieve all transactions for a specific client.
+        Financial Reporting: Aggregate transactions by type, currency, or date for reporting and analysis.
+        Fraud Detection: Monitor transaction volumes and frequency per client for anomalies.
     """,
 }
 
