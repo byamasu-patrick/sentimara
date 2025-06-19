@@ -27,7 +27,7 @@ table_context_dict: dict[str, str] = {
         nationality: The client's country of citizenship.
         
         Relationships:
-        - Linked to the Transaction table via client_id.
+        - Linked to the Transaction table via client_number.
 
         Query Usage:
 
@@ -42,14 +42,14 @@ table_context_dict: dict[str, str] = {
         Key Columns:
 
         transaction_number: A unique identifier for each transaction.
-        client_id: Foreign key referencing the client involved in the transaction.
+        client_number: Foreign key referencing the client involved in the transaction.
         transaction_type: The type/category of the transaction (e.g., deposit, withdrawal).
         amount: The transaction amount.
         currency: The ISO 3-letter currency code used in the transaction.
         transaction_date: The date and time when the transaction occurred.
 
         Relationships:
-        - Linked to the Client table via client_id.
+        - Linked to the Client table via client_number.
 
         Query Usage:
 
@@ -88,12 +88,11 @@ class Client(Base):
     country = Column(String(100), nullable=True)
     
     # Income
-    annual_income = Column(Numeric(15, 2))
-    income_currency = Column(String(3))
-    
+    annual_income = Column(Numeric(15, 2), nullable=True)
+    income_currency = Column(String(3), nullable=True)
+
     # Nationality
-    nationality = Column(String(100))
-    
+    nationality = Column(String(100), nullable=True)
     # Relationship
     transactions = relationship("Transaction", back_populates="client")
 
@@ -103,7 +102,7 @@ class Transaction(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     transaction_number = Column(String(50), unique=True, nullable=True)
-    client_number = Column(String(50), ForeignKey('clients.number'), nullable=True)
+    client_number = Column(String(50), ForeignKey('clients.client_number'), nullable=True)
     transaction_type = Column(String(50),nullable=False)
     amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)  # ISO currency code
