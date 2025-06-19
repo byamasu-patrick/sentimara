@@ -3,6 +3,11 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
+import uuid
+from sqlalchemy.dialects.postgresql import UUID, Numeric
+from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
 
 from libs.db.session import non_async_engine
 
@@ -61,68 +66,55 @@ table_context_dict: dict[str, str] = {
 }
 
 
-class Respondent(Base):
-    __tablename__ = "respondents"
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    published_at = Column(DateTime)
-    respondent_name = Column(String)
-    honorific_prefix = Column(String)
-    honorific_suffix = Column(String)
-    job_title = Column(String)
-    organization = Column(String)
-    address_formatted = Column(String)
-    street_address = Column(String)
-    locality = Column(String)
-    region = Column(String)
-    postal_code = Column(String)
-    telephone = Column(String)
-    email = Column(String)
-    fax_number = Column(String)
-    international_dialing_code = Column(String)
-    post_office_box_number = Column(String)
-    mobile_phone_number = Column(String)
-    mobile_international_dialing_code = Column(String)
-    fax_international_dialing_code = Column(String)
-    full_name = Column(String)
-    latitude = Column(String)
-    longitude = Column(String)
-    is_approved = Column(Boolean)
-    is_newsletter_subscriber = Column(Boolean)
-    is_administrator = Column(Boolean)
-    country_name = Column(String)
-    country_alternate_name = Column(String)
-    world_region_name = Column(String(255), nullable=True)
-    world_region_alternate_name = Column(String(255), nullable=True)
-    world_sub_region_name = Column(String(255), nullable=True)
-    world_sub_region_alternate_name = Column(String(255), nullable=True)
+class Client(Base):
+    __tablename__ = "clients"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Personal Details
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    date_of_birth = Column(DateTime, nullable=False)
+    email = Column(String(255), unique=True)
+    phone = Column(String(20))
+    
+    # Identification
+    id_type = Column(String(50), nullable=False)
+    id_number = Column(String(50), nullable=False, unique=True)
+    
+    # Address
+    street_address = Column(String(255))
+    city = Column(String(100))
+    state = Column(String(100))
+    postal_code = Column(String(20))
+    country = Column(String(100))
+    
+    # Income
+    annual_income = Column(Numeric(15, 2))
+    income_currency = Column(String(3))
+    
+    # Nationality
+    nationality = Column(String(100))
+    
+    # Relationship
+    transactions = relationship("Transaction", back_populates="client")
 
 
-class Response(Base):
-    __tablename__ = "responses"
+class Transaction(Base):
+    __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    created_at = Column(Text)
-    updated_at = Column(Text)
-    patients_reported = Column(Integer)
-    defect = Column(Text)
-    category = Column(Text)
-    sub_category = Column(Text)
-    omim_entry_id = Column(Text)
-    gene_name = Column(Text)
-    inheritance_pattern = Column(Text)
-    respondent_name = Column(Text)
-    email = Column(Text)
-    job_title = Column(Text)
-    organization = Column(Text)
-    locality = Column(Text)
-    region = Column(Text)
-    country_name = Column(String)
-    country_alternate_name = Column(String)
-    world_region_name = Column(String(255), nullable=True)
-    world_region_alternate_name = Column(String(255), nullable=True)
-    world_sub_region_name = Column(String(255), nullable=True)
-    world_sub_region_alternate_name = Column(String(255), nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    transaction_number = Column(String(50), unique=True, nullable=False)
+    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=False)
+    transaction_type = Column(String(50), unique=True, nullable=False)
+    amount = Column(Numeric(15, 2), nullable=False)
+    currency = Column(String(3), nullable=False)  # ISO currency code
+    transaction_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Relationship
+    client = relationship("Client", back_populates="transactions")

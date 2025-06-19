@@ -135,6 +135,5 @@ def start():
         workers=settings.UVICORN_WORKER_COUNT,
     )
 
-
 if __name__ == "__main__":
     start()
