@@ -84,10 +84,9 @@ def get_conversation_headline(prompt: str):
     Question: {prompt}
     """
     response = openai.completions.create(
-        model="gpt-4o",
+        model=settings.MODEL,
         prompt=prompt_template,
         temperature=0.7,
-        # max_tokens=100,
     )
 
     return response.choices[0].text.strip()
