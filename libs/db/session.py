@@ -21,7 +21,9 @@ engine = create_async_engine(
     echo=True,  # Enable SQL logging for debugging
 )
 
-non_async_engine = create_engine(LLM_DATABASE_URL)
+non_async_engine = create_engine(
+    LLM_DATABASE_URL
+)
 Session = sessionmaker(bind=non_async_engine)
 SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
