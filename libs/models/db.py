@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, DateTime, String, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid

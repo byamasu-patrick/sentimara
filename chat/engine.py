@@ -54,9 +54,6 @@ logger = logging.getLogger(__name__)
 logger.info("Applying nested asyncio patch")
 nest_asyncio.apply()
 
-init_db()
-
-
 def get_conversation_headline(prompt: str):
     """
     Generates a concise and informative headline from a given survey question.

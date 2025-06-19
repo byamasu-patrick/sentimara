@@ -1,13 +1,16 @@
-"""
-Database configuration module that manages database connection settings and URLs.
-This module is separate from the main config to avoid circular imports.
-"""
 import os
 from dotenv import load_dotenv
-from core.config import settings
+import urllib
 
 load_dotenv()
 
-# Define DB connection strings
-LLM_DATABASE_URL = f"postgresql+psycopg2://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST_NAME}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
-LLM_DATABASE_URL_ASYNC = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST_NAME}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+# Encode username and password
+POSTGRES_USER = urllib.parse.quote_plus(os.getenv("POSTGRES_USER"))
+POSTGRES_PASSWORD = urllib.parse.quote_plus(os.getenv("POSTGRES_PASSWORD"))
+
+POSTGRES_HOST_NAME = os.getenv("POSTGRES_HOST_NAME")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+
+LLM_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST_NAME}:{POSTGRES_PORT}/{POSTGRES_DB}"
+LLM_DATABASE_URL_ASYNC = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST_NAME}:{POSTGRES_PORT}/{POSTGRES_DB}"
