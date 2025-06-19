@@ -10,16 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from core.db_config import LLM_DATABASE_URL, LLM_DATABASE_URL_ASYNC
 
 load_dotenv()
-#  Load environment variables
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-POSTGRES_HOST_NAME = os.getenv("POSTGRES_HOST_NAME")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
-# Define DB connection string
-LLM_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST_NAME}:{POSTGRES_PORT}/{POSTGRES_DB}"
-
-LLM_DATABASE_URL_ASYNC = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST_NAME}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 engine = create_async_engine(
     LLM_DATABASE_URL_ASYNC,
