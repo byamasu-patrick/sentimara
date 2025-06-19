@@ -10,3 +10,4 @@ volume
 
 # misc
 .DS_Store
+*.csv

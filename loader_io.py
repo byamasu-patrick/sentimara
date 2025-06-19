@@ -9,4 +9,4 @@ async def get_verification_file() -> str:
     """
     Verification string for loader.io
     """
-    return Response(settings.LOADER_IO_VERIFICATION_STR, media_type="text/plain")
+    return Response(settings.LOADER_IO_VERIFICATION_STR, media_type="text/plain") # type: ignore[return-value]
