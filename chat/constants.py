@@ -1,5 +1,5 @@
 """
-This module is designed for configuring system messages and templates related to SQL query generation and analysis in the field of Primary Immunodeficiencies. It contains predefined messages and templates that guide the processing and interpretation of medical survey data. The module also defines constants for handling text and SQL query parsing, ensuring accurate and relevant data analysis aligned with the latest medical findings and classifications.
+This module is designed for configuring system messages and templates related to SQL query generation and analysis in the field of  Fraud Detection. It contains predefined messages and templates that guide the processing and interpretation of medical survey data. The module also defines constants for handling text and SQL query parsing, ensuring accurate and relevant data analysis aligned with the latest medical findings and classifications.
 """
 
 SUB_QUESTION_SYSTEM_PROMPT = """\
