@@ -29,41 +29,9 @@ from llama_index.core.workflow import (
 AsyncCallable = Callable[..., Awaitable[Any]]
 
 tables_list = [
-    "respondents",
-    "treatment_patterns",
-    "proxy_respondents",
-    "colleagues",
-    "demographics",
-    "completed_survey",
-    "net_promoter_scores",
+    "clients",
+    "transactions",
 ]
-
-responses_table_name_="responses"
-
-responses_table_query_engine_description="""
-This engine specializes in complex analysis of survey responses. It processes patients_reported, and hierarchical disease classifications \
-(defect, category, sub_category). The engine excels in genetic correlation studies using omim_entry_id and gene_name, \
-analyzing inheritance patterns, and geographical distribution patterns across multiple granularities (locality to world_sub_region_name). \
-It can perform: time-series analysis of patient reported, disease prevalence calculations, genetic-demographic correlations, geographical clustering analysis,\
-and organizational contribution assessments. Advanced capabilities include trend analysis across world regions, inheritance pattern distribution studies, \
-and multi-level categorical aggregations. The engine supports complex joins with demographic and treatment tables for comprehensive patient insights.
-
-This engine can also be used to provide insights on how to prioritize investments based on most occuring PI defect across different regions or globally based on the number of patient reported.
-
-N.B: Never use Primary Immunodeficiency (PI) as a category during aggregation.
-    
-# Note: When querying for CVID and/or other diseases/defects consider using survey "responses" table to get any relevant data \
-which can be aggregated based on world regions or disease categories or sub-categories
-"""
-
-top_responses_query_engine_description="""
-Expert system for comprehensive immunological survey analysis, specializing in patient reporting patterns, genetic-disease correlations, \
-and global geographical distribution of Primary Immunodeficiencies. Handles complex queries across clinical categories, \
-genetic markers (OMIM/gene data), inheritance patterns, and multi-level geographical hierarchies. Ideal for analyzing disease prevalence, \
-geographical patterns, and organizational reporting trends. \
-Supports advanced statistical analysis and temporal trending of patient data across various categories and subcategories.
-"""
-
 
 
 def create_schema_from_function(
@@ -178,130 +146,30 @@ class FunctionToolWithContext(FunctionTool):
             raw_output=tool_output,
         )
 
-
 table_groups: List[TableInfo] = [
     TableInfo(
-        name="respondents",
+        name="clients",
         query_engine_description="""
-          This engine delves into the 'respondents' table, extracting and interpreting a wide array of data to profile survey participants. \
-          It focuses on analyzing attributes such as respondent names, job titles, organizational affiliations, contact details, and geographical information, \
-          including locality/city, region/state/province, and country for precise location analysis. \
-          The engine excels in uncovering insights into the respondents' professional backgrounds and geographic distribution. \
-          It also provides details on contact modalities, offering a nuanced understanding of the diversity and professional networks within the survey data.
+          This engine explores the 'clients' table, extracting detailed personal, demographic, and financial information about each client. \
+          It focuses on analyzing attributes such as name, date of birth, nationality, income, contact details (email, phone), and address \
+          (city, state, country). It also interprets identification information like ID type and number. \
+          The engine excels at building client profiles for segmentation, verification, and regional or income-based analysis.
         """,
         top_query_engine_description="""
-          An advanced engine tailored to the 'respondents' table, designed to analyze participant profiles, 
-          encompassing professional backgrounds, contact information, and geographic data. 
-          This engine provides a comprehensive snapshot of participant diversity and professional networks.
+          An advanced engine tailored to the 'clients' table, designed to analyze client demographics, identity verification data, and financial details. \
+          It delivers comprehensive insights into client profiles, income levels, and geographic distribution.
         """,
     ),
     TableInfo(
-        name="completed_survey",
+        name="transactions",
         query_engine_description="""
-        This engine focuses on the completed_survey table, which captures data related to respondents who have fully completed the survey. \
-        It provides a detailed analysis of survey completion status, including whether a respondent has completed the survey and when they did so. \
-        Key temporal attributes such as created_at, updated_at, and published_at are examined to track the timing of survey completions.
-
-        In addition to completion data, the engine assesses respondent demographics (such as respondent names, organizations, and locations), \
-        along with geographical information (e.g., locality, region, and country). This analysis provides insights into engagement patterns, survey effectiveness, \
-        and the geographical distribution of completed responses, helping identify both temporal and regional trends in survey participation.
+          This engine focuses on the 'transactions' table, analyzing all client-related financial transactions. \
+          It interprets attributes such as transaction type, amount, currency, and transaction date, while linking each transaction to the appropriate client via client_id. \
+          It supports trend analysis, transactional behavior monitoring, currency usage evaluation, and temporal financial activity reporting.
         """,
         top_query_engine_description="""
-        An engine optimized for analyzing the completed_survey table, this tool is designed to assess completion patterns and respondent demographics. It interprets key temporal data to understand when surveys were completed and evaluates geographical information to offer insights into the distribution of completed surveys. This engine is invaluable for studying respondent engagement and the overall effectiveness of survey design.
-        """,
-    ),
-    TableInfo(
-        name="treatment_patterns",
-        query_engine_description="""
-        Advanced analytics engine for comprehensive treatment pattern analysis in PI cases, specializing in temporal (survey_year) and geographical distribution of \
-        treatments. Processes multiple treatment categories: IgG therapies (IVIG clinic/home, SCIG, others), gene therapy, PEG-ADA, and transplantations \
-        (MRD, MUD, M-MUD, haplo-identical donors; stem cell sources: BM, PBSC, cord blood). Calculates treatment adoption rates, \
-        comparing patients_followed vs patients_with_pi_defect and jeffrey_insights_program diagnoses. Performs trend analysis across years, \
-        geographical hierarchies (locality to world_region), and organizations. Enables complex queries for treatment effectiveness, regional variations, \
-        and temporal patterns. Supports comparative analysis between treatment modalities, geographical distribution of treatment preferences, 
-        and organizational treatment patterns. Handles time-based queries using created_at, updated_at, and published_at timestamps.
-
-        This engine can also be used to provide insights on how to prioritize investments based on various treatment modalities across different regions or globally.
-        """,
-        top_query_engine_description="""
-        Specialized engine for analyzing PI treatment distributions and outcomes across multiple therapy types. Processes patient metrics \
-        (followed, diagnosed, program-identified) and diverse treatments (immunoglobulin therapies, gene therapy, transplants with various donor/stem cell types). \
-        Excels in geographical treatment pattern analysis, temporal trends, and treatment adoption rates. Supports complex queries comparing treatment modalities, \
-        regional variations, and organizational practices. Essential for understanding treatment distribution, effectiveness patterns, \
-        and healthcare delivery optimization across different geographical scales.
-        
-        This engine can also be used to provide insights on how to prioritize investments based on various treatment modalities across different regions or globally.
-        """,
-    ),
-    TableInfo(
-        name="demographics",
-        query_engine_description="""
-        Sophisticated demographic analysis engine specializing in multi-dimensional patient population studies across temporal and geographical dimensions. \
-        Processes age-based distributions (patient_age, age_count), gender statistics (gender_male_count, gender_female_count), and hierarchical geographic data \
-        (locality to world_sub_region). Performs temporal trend analysis using survey_year and timestamp fields (created_at, updated_at, published_at). \
-        Excels in: age-group distribution analysis, gender ratio calculations, geographical demographic clustering, organizational demographic patterns, \
-        and longitudinal demographic shifts. Supports complex queries including demographic density mapping, gender distribution across regions, \
-        age-group comparisons across organizations, and temporal demographic evolution. Enables cross-regional analysis using alternate naming conventions \
-        (country_alternate_name, world_region_alternate_name) for comprehensive global demographic insights.
-
-        This engine can also be used to provide insights on what action can be taken based on various demographic data between make and female but also based on age 
-        distribution across different regions or globally.
-        """,
-        top_query_engine_description="""
-        Advanced demographic analysis system for patient population studies, specializing in age distribution patterns, gender statistics, \
-        and geographical demographic mapping. Processes temporal trends across survey years, organizational patterns, \
-        and multi-level geographical hierarchies. Excels in analyzing demographic variations across regions, age-group distributions, gender ratios, \
-        and organizational demographic profiles. Essential for understanding patient population characteristics, regional demographic patterns, \
-        and temporal demographic trends in healthcare studies.
-        """,
-    ),
-    TableInfo(
-        name="proxy_respondents",
-        query_engine_description="""
-        Specialized engine for analyzing authorized survey participants who submit data on behalf of primary respondents. \
-        Processes delegate relationships through personal identifiers (given_name, family_name, email) and institutional affiliations. \
-        Tracks proxy submission patterns across temporal dimensions (created_at, updated_at, published_at) and geographical hierarchies \
-        (locality to world_sub_region). Enables analysis of delegation patterns, organizational proxy relationships, \
-        and geographical distribution of proxy submissions. Supports complex queries for proxy authorization patterns, \
-        institutional representation trends, and cross-regional proxy participation analysis. Essential for understanding survey data submission chains, \
-        verifying data providence, and analyzing organizational delegation patterns in multi-participant survey scenarios.
-        """,
-        top_query_engine_description="""
-        Advanced analysis engine for authorized proxy survey participants who actively submit data on behalf of primary respondents. \
-        Specializes in tracking delegate relationships, submission patterns, and organizational representations across geographical hierarchies. \
-        Essential for understanding proxy participation dynamics, institutional delegation patterns, and data submission authorization chains in survey responses.
-        """,
-    ),
-    TableInfo(
-        name="colleagues",
-        query_engine_description="""
-        Comprehensive analysis engine for tracking referenced healthcare professionals within respondent submissions who don't directly participate in surveys. \
-        Processes professional network data through personal identifiers (given_name, family_name, email) and institutional connections. \
-        Maps hierarchical professional relationships from individual to organizational levels across geographical dimensions (locality to world_sub_region). \
-        Enables analysis of professional networks, institutional collaborations, and regional healthcare provider distributions. \
-        Supports queries for understanding respondent-colleague relationships, organizational staff structures, \
-        and geographical distribution of healthcare professionals referenced in survey responses.
-        """,
-        top_query_engine_description="""
-        Specialized engine for analyzing referenced healthcare professionals in survey responses who are mentioned by active respondents but don't participate \
-        directly. Focuses on mapping professional networks, institutional affiliations, and geographical distribution of referenced colleagues. \
-        Essential for understanding the broader healthcare provider landscape and professional relationships within surveyed organizations.
-        """,
-    ),
-    TableInfo(
-        name="net_promoter_scores",
-        query_engine_description="""
-          This engine specializes in the 'net_promoter_scores' table, focusing on analyzing respondent loyalty and satisfaction. \
-          It uniquely accesses respondent comments, providing valuable qualitative data alongside numerical scores. \
-          This access enables a more nuanced analysis, allowing the engine to interpret not just the scores but also the underlying reasons and \
-          sentiments expressed in the comments. Additionally, it examines survey year, completion status, and respondent demographics, \
-          offering a comprehensive understanding of satisfaction and loyalty trends across different groups and time periods.
-        """,
-        top_query_engine_description="""
-          A sophisticated tool designed for the 'net_promoter_scores' table, this engine excels in extracting and analyzing respondent comments, \
-          providing deeper insights into customer or client satisfaction and loyalty. It skillfully combines the analysis of numerical scores with qualitative data \
-          from comments, enabling a multifaceted assessment of satisfaction levels and the underlying reasons. This approach is enhanced by the inclusion of \
-          demographic data, offering a comprehensive view of satisfaction trends and loyalty across various groups.
+          An advanced engine for the 'transactions' table, designed to assess transaction patterns, volumes, types, and currency flows over time. \
+          Ideal for financial activity analysis and linking monetary behavior to specific client segments.
         """,
     ),
 ]
