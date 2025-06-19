@@ -39,7 +39,7 @@ from chat.qa_response_synth import get_custom_response_synth, get_custom_respons
 from chat.core.settings import CustomSettings
 from chat.utils import table_groups, tables_list, responses_table_name_, responses_table_query_engine_description, top_responses_query_engine_description
 from core.config import settings
-from libs.db.session import Session, non_async_engine
+from libs.db.session import non_async_engine
 from libs.models.chatdb import MessageRoleEnum, MessageStatusEnum
 from libs.models.db import init_db, table_context_dict, responses_table_name, responses_table_description
 from schema import Conversation as ConversationSchema
@@ -117,6 +117,41 @@ class QueryEngineData:
         if not isinstance(value, QueryEngineInfo):
             raise ValueError("Query engine name must be of type QueryEngineInfo.")
         self._query_engine = value
+
+def init_azure_openai():
+    from llama_index.core.constants import DEFAULT_TEMPERATURE
+    from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
+    from llama_index.llms.azure_openai import AzureOpenAI
+    from llama_index.core import Settings
+
+    # LLM Configuration
+    max_tokens = os.getenv("LLM_MAX_TOKENS", 16384)
+    llm_config = {
+        "model": settings.MODEL,
+        "deployment_name": settings.AZURE_LLM_DEPLOYMENT_NAME,
+        "api_key": settings.AZURE_OPENAI_API_KEY,
+        "azure_endpoint": settings.AZURE_OPENAI_ENDPOINT,
+        "api_version": settings.AZURE_OPENAI_API_VERSION,
+        "temperature": float(os.getenv("LLM_TEMPERATURE", DEFAULT_TEMPERATURE)),
+        "max_tokens": int(max_tokens) if max_tokens is not None else 16384,
+    }
+    Settings.llm = AzureOpenAI(**llm_config)
+
+    # Embedding Configuration
+    dimensions = settings.EMBEDDING_DIM
+    embed_config = {
+        "model": settings.EMBEDDING_MODEL,
+        "deployment_name": settings.AZURE_EMBEDDING_DEPLOYMENT_NAME,
+        "api_key": settings.AZURE_OPENAI_API_KEY,
+        "azure_endpoint": settings.AZURE_OPENAI_ENDPOINT,
+        "api_version": settings.AZURE_OPENAI_API_VERSION,
+        "dimensions": int(dimensions) if dimensions is not None else None,
+    }
+    Settings.embed_model = AzureOpenAIEmbedding(**embed_config)
+
+    # Chunk settings
+    Settings.chunk_size = int(os.getenv("CHUNK_SIZE", "1024"))
+    Settings.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "20"))
 
 
 def init_openai():
@@ -345,7 +380,6 @@ def build() -> tuple[List[QueryEngineInfo], SQLTableRetrieverQueryEngine]:
     Returns:
     List[QueryEngineInfo]: A list of QueryEngineInfo instances, each containing a configured query engine for database interaction.
     """
-    sqlite_session = Session()
     db_uri = f"postgresql+psycopg2://{DATABASE_USERNAME_DEV}:{DATABASE_PASSWORD_DEV}@{DATABASE_HOST_DEV}:{DATABASE_PORT_DEV}/{DATABASE_NAME_DEV}"
 
     # Create an SQLAlchemy engine for PostgreSQL
@@ -355,8 +389,6 @@ def build() -> tuple[List[QueryEngineInfo], SQLTableRetrieverQueryEngine]:
     # TODO: Variable name "SessionPG" doesn't conform to snake_case naming style
     SessionPG = sessionmaker(bind=pg_engine)
     pg_session = SessionPG()
-
-    # DBSeeder(pg_session, sqlite_session).seed()
 
     pg_session.close_all()
     # Create query engines dynamically
