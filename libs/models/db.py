@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, DateTime, Numeric, String
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid
@@ -65,6 +65,7 @@ class Client(Base):
     __tablename__ = "clients"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    client_number = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -102,7 +103,7 @@ class Transaction(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     transaction_number = Column(String(50), unique=True, nullable=True)
-    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=True)
+    client_number = Column(String(50), ForeignKey('clients.number'), nullable=True)
     transaction_type = Column(String(50),nullable=False)
     amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)  # ISO currency code
