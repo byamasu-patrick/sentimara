@@ -327,7 +327,7 @@ export default function SentimaraChat() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-gray-800 text-sm">
-          <p>Powered by Old Mutual</p>
+          <p>Team 6 - Hackstation </p>
         </div>
       </div>
     </div>
