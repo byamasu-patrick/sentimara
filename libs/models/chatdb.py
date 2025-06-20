@@ -131,6 +131,7 @@ class Client(Base):
     
     # Personal Details
     first_name = Column(String(100), nullable=False)
+    client_number = Column(String(50), unique=True, nullable=False)
     last_name = Column(String(100), nullable=False)
     date_of_birth = Column(DateTime, nullable=False)
     email = Column(String(255), unique=True)
@@ -162,7 +163,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     transaction_number = Column(String(50), unique=True, nullable=True)
-    client_id = Column(UUID(as_uuid=True), ForeignKey('clients.id'), nullable=True)
+    client_number = Column(String(50), ForeignKey('clients.client_number'), nullable=True)
     transaction_type = Column(String(50),nullable=False)
     amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)  # ISO currency code
