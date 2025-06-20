@@ -133,7 +133,7 @@ class Client(Base):
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     date_of_birth = Column(DateTime, nullable=False)
-    email = Column(String(255), unique=True)
+    email = Column(String(255))
     phone = Column(String(20))
     
     # Identification

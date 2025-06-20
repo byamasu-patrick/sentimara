@@ -58,7 +58,7 @@ class Settings(PreviewPrefixedSettings):
     Application settings.
     """
 
-    PROJECT_NAME: str = "ModellMind AI - Jeffrey Model Foundation"
+    PROJECT_NAME: str = "Sentimara - Old Mutual Hackathon"
     API_PREFIX: str = "/api"
     DATABASE_URL: str = LLM_DATABASE_URL_ASYNC
     LOG_LEVEL: str = "DEBUG"
